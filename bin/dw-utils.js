@@ -28,17 +28,19 @@ try {
 }
 
 var copts = cli.parse({
-  version    : ['V', 'Code version to upload to (Default is version1)', 'string'],
-  hostname   : ['H', 'Hostname of remote DW server', 'host'],
-  username   : ['u', 'Username for WebDav (Same as Business Manager)', 'string'],
-  cartridges : ['C', 'Path to Cartridges from project root (Default is cartridges)', 'path'],
-  save       : [false, 'Save settings for future use', 'bool'],
-  activate   : ['a', '[clean] Activate selected version', 'bool'],
-  prompt     : ['p', 'Prompt for password', 'bool'],
-  stability  : ['s', 'Stability theshold in ms for file watching', 'number',  /^win/.test(process.platform)?500:100],
-  interval   : ['i', '[log] Polling interval (in seconds) for log watching', 'number', 5],
-  follow     : ['f', '[log] Only show new messages', 'bool', opts.follow],
-  all        : [false, '[log] Display all log messages even if follow is set in the `dw.json` file'],
+  version       : ['V', 'Code version to upload to (Default is version1)', 'string'],
+  hostname      : ['H', 'Hostname of remote DW server', 'host'],
+  username      : ['u', 'Username for WebDav (Same as Business Manager)', 'string'],
+  cartridges    : ['C', 'Path to Cartridges from project root (Default is cartridges)', 'path'],
+  save          : [false, 'Save settings for future use', 'bool'],
+  activate      : ['a', '[clean] Activate selected version', 'bool'],
+  prompt        : ['p', 'Prompt for password', 'bool'],
+  stability     : ['s', 'Stability theshold in ms for file watching', 'number',  /^win/.test(process.platform)?500:100],
+  interval      : ['i', '[log] Polling interval (in seconds) for log watching', 'number', 5],
+  follow        : ['f', '[log] Only show new messages', 'bool', opts.follow],
+  all           : [false, '[log] Display all log messages even if follow is set in the `dw.json` file'],
+  ignore        : [false, '[watch] File watch ignore pattern (anywatch-compatible)', 'string'],
+  'ignore-from' : [false, '[watch], File containing multiple file watch ignore patterns', 'path'],
 }, ['activate', 'clean', 'upload-version', 'init', 'watch', 'log'])
 
 function usage(flag){
@@ -68,6 +70,8 @@ if (cli.command == 'init'){
   opts.version    = copts.version    || opts.version    || 'version1'
   opts.username   = copts.username   || opts.username   || usage('username')
   opts.cartridges = copts.cartridges || opts.cartridges || 'cartridges'
+  opts.ignore     = copts.ignore     || opts.ignore     || ''
+  opts['ignore-from'] = copts['ignore-from'] || opts['ignore-from'] || null
 
   switch(cli.command){ // command specific arguments
   case 'upload-version':

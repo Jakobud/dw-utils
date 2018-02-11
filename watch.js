@@ -8,7 +8,9 @@ var
   dwServer    = require('dw-webdav'),
   path        = require('path'),
   sliceAnsi   = require('slice-ansi'),
-  utils       = require('./utils')
+  utils       = require('./utils'),
+  fs          = require('fs'),
+  path          = require('path')
 
 function watch(config){
 
@@ -207,6 +209,33 @@ function watch(config){
     out(chalk.yellow.bold(' -- Waiting for changes --'))
   }
 
+  // Get array of ignore patterns
+  function getIgnored(){
+    let ignore = Array.isArray(config.ignore) ? config.ignore : [config.ignore]
+
+    if (!config['ignore-from']) {
+      return ignore
+    }
+
+    const ignoreFromPath = path.resolve(config['ignore-from'])
+    try {
+      // If ignore-from file exist...
+      if (fs.statSync(ignoreFromPath)) {
+        // Require and combine ignore pattern arrays
+        ignore = ignore.concat(fs.readFileSync(ignoreFromPath).toString().split("\n"))
+      }
+    } catch (err) {
+      out(chalk.red('ignore-from file does not exist: ' + ignoreFromPath))
+    }
+
+    // Filter out duplicate and empty string patterns
+    ignore = ignore.filter((value, index) => {
+      return ignore.indexOf(value) == index && value !== ''
+    })
+
+    return ignore
+  }
+
   let statusLine = out(chalk.yellow('Connecting ... '))
   server.auth()
     .catch((e) => {
@@ -220,6 +249,7 @@ function watch(config){
 
       chokidar.watch(cartridges, {
         persistent: true,
+        ignored: getIgnored(),
         ignoreInitial: true,
         awaitWriteFinish: {
           stabilityThreshold: config.stabilityThreshold,
